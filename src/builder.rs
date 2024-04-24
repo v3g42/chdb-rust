@@ -38,7 +38,7 @@ impl SessionBuilder {
     }
 
     pub fn udf_path(mut self, path: impl Into<PathBuf>) -> Self {
-        self.data_path = path.into();
+        self.udf_path = path.into();
         self
     }
 
