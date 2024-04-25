@@ -4,27 +4,36 @@ use crate::{bindings, LocalResultV2};
 
 pub struct Session {
     pub(crate) format: String,
-    pub(crate) data_path: String,
-    pub(crate) udf_path: String,
-    pub(crate) log_level: String,
+    pub(crate) data_path: Option<String>,
+    pub(crate) udf_path: Option<String>,
+    pub(crate) log_level: Option<String>,
 }
 
 impl Session {
     pub fn execute(&self, query: impl Into<String>) -> Option<LocalResultV2> {
-        let argv = vec![
+        let mut argv = vec![
             "clickhouse".to_string(),
             "--multiquery".to_string(),
             format!("--output-format={}", self.format),
             format!("--query={}", query.into()),
-            format!("--path={}", self.data_path),
-            format!("--log-level={}", self.log_level),
-            "--".to_string(),
-            format!("--user_scripts_path={}", self.udf_path),
-            format!(
-                "--user_defined_executable_functions_config={}/*.xml",
-                self.udf_path
-            ),
         ];
+        if let Some(data_path) = &self.data_path {
+            argv.push(format!("--path={}", data_path));
+        }
+
+        if let Some(udf_path) = &self.udf_path {
+            argv.extend([
+                "--".to_string(),
+                format!("--user_scripts_path={}", udf_path),
+                format!(
+                    "--user_defined_executable_functions_config={}/*.xml",
+                    udf_path
+                ),
+            ]);
+        }
+        if let Some(log_level) = &self.log_level {
+            argv.push(format!("--log-level={}", log_level));
+        }
 
         let argc = argv.len() as i32;
 
