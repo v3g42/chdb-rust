@@ -83,8 +83,12 @@ impl LocalResultV2 {
     pub fn buf(&self) -> &[u8] {
         let len = unsafe { (*self.local).len };
         let buf = unsafe { (*self.local).buf };
-        let bytes: &[u8] = unsafe { slice::from_raw_parts(buf as *const u8, len) };
-        bytes
+        if len > 0 {
+            let bytes: &[u8] = unsafe { slice::from_raw_parts(buf as *const u8, len) };
+            bytes
+        } else {
+            &[]
+        }
     }
 
     pub fn elapsed(&self) -> Duration {
